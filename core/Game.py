@@ -48,6 +48,11 @@ class Game:
 
         return p1_payoff, p2_payoff
 
+    def max_payoff(self):
+        pairs = it.combinations(self.player1.costs.items(), 2)
+        max_pair = max(pairs, key=lambda pair: pair[0][1] + pair[1][1])
+        return max_pair[0][1] + max_pair[1][1]
+
     def get_all_outcomes(self):
         return list(it.chain(*self.payoff_matrix))
 

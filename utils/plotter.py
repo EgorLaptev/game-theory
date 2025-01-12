@@ -1,10 +1,10 @@
 import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
+import numpy as np
 from config.plot import *
 
-
-def game_plot(all_outcomes, pareto_outcomes, nash_outcomes):
-    U = (5, 5)
+def game_plot(all_outcomes, pareto_outcomes, nash_outcomes, max_payoff):
+    U = (max_payoff, max_payoff)
 
     plt.figure(figsize=(8, 8))
 
@@ -12,6 +12,15 @@ def game_plot(all_outcomes, pareto_outcomes, nash_outcomes):
         plt.scatter(outcome[0], outcome[1], color=all_outcomes_color, label='All outcomes' if outcome is all_outcomes[0] else "")
 
     plt.scatter(U[0], U[1], color=impossible_max_color, label='Impossible maximum', s=impossible_marker_size)
+
+    # Сортируем точки Парето по X (или по Y, в зависимости от того, как хотите)
+    sorted_pareto_outcomes = sorted(pareto_outcomes, key=lambda x: x[0])
+
+    # Строим цепочку между точками Парето
+    for i in range(len(sorted_pareto_outcomes) - 1):
+        point1 = sorted_pareto_outcomes[i]
+        point2 = sorted_pareto_outcomes[i + 1]
+        plt.plot([point1[0], point2[0]], [point1[1], point2[1]], linestyle='--', color=pareto_color, linewidth=1)
 
     for outcome in pareto_outcomes:
         plt.scatter(outcome[0], outcome[1], color=pareto_color, s=marker_size, label='Pareto efficiency' if outcome is pareto_outcomes[0] else "")
@@ -23,11 +32,13 @@ def game_plot(all_outcomes, pareto_outcomes, nash_outcomes):
             plt.scatter(outcome[0], outcome[1], s=nash_marker_size, c=pareto_color, marker=MarkerStyle("o", fillstyle="right"))
             plt.scatter(outcome[0], outcome[1], s=nash_marker_size, c=nash_color, marker=MarkerStyle("o", fillstyle="left"))
 
+        # Провести линии от невозможного максимума (U) до каждой точки Нэша
+        plt.plot([U[0], outcome[0]], [U[1], outcome[1]], linestyle='--', color=impossible_max_color, linewidth=1)
 
-    plt.xticks(x_ticks)
-    plt.yticks(y_ticks)
-    plt.xlim(x_limit)
-    plt.ylim(y_limit)
+    plt.xticks(range(0, max_payoff+1))
+    plt.yticks(range(0, max_payoff+1))
+    plt.xlim(-0.5, max_payoff+0.5)
+    plt.ylim(-0.5, max_payoff+0.5)
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
