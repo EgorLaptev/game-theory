@@ -5,7 +5,7 @@ impossible_max_color = "#DB3838"
 
 marker_size = 50
 nash_marker_size = 100
-overlap_marker_size = 100
+impossible_marker_size = 50
 
 alpha = 0.5
 
