@@ -1,4 +1,6 @@
 import matplotlib.pyplot as plt
+from matplotlib.markers import MarkerStyle
+from config.plot import *
 
 
 def game_plot(all_outcomes, pareto_outcomes, nash_outcomes):
@@ -6,30 +8,29 @@ def game_plot(all_outcomes, pareto_outcomes, nash_outcomes):
 
     plt.figure(figsize=(8, 8))
 
-    # Все исходы
     for outcome in all_outcomes:
-        plt.scatter(outcome[0], outcome[1], color='gray', label='All outcomes' if outcome is all_outcomes[0] else "")
+        plt.scatter(outcome[0], outcome[1], color=all_outcomes_color, label='All outcomes' if outcome is all_outcomes[0] else "")
 
-    # Парето-оптимальные исходы
     for outcome in pareto_outcomes:
-        plt.scatter(outcome[0], outcome[1], color='#1A64B8', s=50, label='Pareto efficiency' if outcome is pareto_outcomes[0] else "")
+        plt.scatter(outcome[0], outcome[1], color=pareto_color, s=marker_size, label='Pareto efficiency' if outcome is pareto_outcomes[0] else "")
 
-    # Равновесия по Нэшу
     for outcome in nash_outcomes:
-        plt.scatter(outcome[0], outcome[1], color='#408040', s=75, label='Nash equilibria' if outcome is nash_outcomes[0] else "")
+        plt.scatter(outcome[0], outcome[1], color=nash_color, s=nash_marker_size, label='Nash equilibrium' if outcome is nash_outcomes[0] else "")
 
-    # Невозможный максимум
-    plt.scatter(U[0], U[1], color='#DB3838', label='Impossible maximum', s=100)
+        if outcome in pareto_outcomes:
+            plt.scatter(outcome[0], outcome[1], s=overlap_marker_size, c=pareto_color, marker=MarkerStyle("o", fillstyle="right"))
+            plt.scatter(outcome[0], outcome[1], s=overlap_marker_size, c=nash_color, marker=MarkerStyle("o", fillstyle="left"))
 
-    plt.xticks(range(0, 6))
-    plt.yticks(range(0, 6))
-    plt.xlim(0, 5.5)
-    plt.ylim(0, 5.5)
-    plt.xlabel('P1 payoff')
-    plt.ylabel('P2 payoff')
-    plt.title('Game Outcomes')
+    plt.scatter(U[0], U[1], color=impossible_max_color, label='Impossible maximum', s=nash_marker_size)
+
+    plt.xticks(x_ticks)
+    plt.yticks(y_ticks)
+    plt.xlim(x_limit)
+    plt.ylim(y_limit)
+    plt.xlabel(x_label)
+    plt.ylabel(y_label)
+    plt.title(title)
     plt.grid(True)
     plt.legend()
 
-    # Показываем график
     plt.show()

@@ -1,2 +1,4 @@
 matplotlib==3.10.0
+nashpy==0.0.41
 pandas==2.2.3
+numpy~=2.2.1

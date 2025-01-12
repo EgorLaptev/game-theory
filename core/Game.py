@@ -1,80 +1,101 @@
+import nashpy as nash
+import numpy as np
 import pandas as pd
+import itertools as it
 
 
 class Game:
-    def __init__(self, player1, player2, choices):
+    def __init__(self, player1, player2, strategies):
         self.player1 = player1
         self.player2 = player2
-        self.choices = choices
-        self.payoff_table = {}
+        self.strategies = strategies
+        self.payoff_matrix = self.generate_payoff_matrix()
 
-    def calculate_payoff(self, P1_choice, P2_choice):
-        P1_payoff = self.player1.calculate_payoff(P1_choice)
-        P2_payoff = self.player2.calculate_payoff(P2_choice)
+        self.p1_matrix = [[payoff[0] for payoff in row] for row in self.payoff_matrix]
+        self.p2_matrix = [[payoff[1] for payoff in row] for row in self.payoff_matrix]
+
+        # nash game engine
+        self.game = nash.Game(self.p1_matrix, self.p2_matrix)
+
+    def generate_payoff_matrix(self):
+        """
+        Создаёт матрицу выплат на основе стратегий и затрат игроков.
+        """
+        matrix = []
+        for p1_choice in self.strategies:
+            row = []
+            for p2_choice in self.strategies:
+                p1_split = p1_choice.split('/')
+                p2_split = p2_choice.split('/')
+                payoffs = self.calculate_payoff(p1_split, p2_split)
+                row.append(payoffs)
+            matrix.append(row)
+        return matrix
+
+    def calculate_payoff(self, p1_choices, p2_choices):
+        """
+        Рассчитывает выплаты для каждого игрока.
+        """
+        p1_payoff = self.player1.calculate_payoff(p1_choices)
+        p2_payoff = self.player2.calculate_payoff(p2_choices)
 
         # Adjust payoffs for overlapping choices
-        if P1_choice[0] in P2_choice and self.player1.costs[P1_choice[0]] < self.player2.costs[P1_choice[0]]:
-            P2_payoff -= self.player2.costs[P1_choice[0]]
-        elif P1_choice[0] in P2_choice:
-            P1_payoff -= self.player1.costs[P1_choice[0]]
+        for choice in set(p1_choices) & set(p2_choices):
+            if self.player1.costs[choice] > self.player2.costs[choice]:
+                p2_payoff -= self.player2.costs[choice]
+            else:
+                p1_payoff -= self.player1.costs[choice]
 
-        if P1_choice[1] in P2_choice and self.player1.costs[P1_choice[1]] < self.player2.costs[P1_choice[1]]:
-            P2_payoff -= self.player2.costs[P1_choice[1]]
-        elif P1_choice[1] in P2_choice:
-            P1_payoff -= self.player1.costs[P1_choice[1]]
-
-        return (P1_payoff, P2_payoff)
-
-    def generate_payoff_table(self):
-        for P1_choice in self.choices:
-            for P2_choice in self.choices:
-                P1_split = P1_choice.split('/')
-                P2_split = P2_choice.split('/')
-                self.payoff_table[(P1_choice, P2_choice)] = self.calculate_payoff(P1_split, P2_split)
-
-    def display_payoff_table(self):
-        df = self.get_dataframe()
-        for (P1_choice, P2_choice), payoff in self.payoff_table.items():
-            df.loc[P1_choice, P2_choice] = str(payoff)
-        print(df)
-
-    def get_dataframe(self):
-        return pd.DataFrame(index=self.choices, columns=self.choices)
+        return p1_payoff, p2_payoff
 
     def get_all_outcomes(self):
-        return [(P1_choice, P2_choice, self.payoff_table[(P1_choice, P2_choice)])
-                for P1_choice in self.choices
-                for P2_choice in self.choices]
+        return list(it.chain(*self.payoff_matrix))
 
-    def find_nash_equilibria(self):
-        nash_equilibria = []
-        df = self.get_dataframe()
-        for P1_choice in self.choices:
-            for P2_choice in self.choices:
-                P1_payoff, P2_payoff = self.payoff_table[(P1_choice, P2_choice)]
+    def display_payoff_matrix(self):
+        """
+        Печатает матрицу выплат в виде DataFrame.
+        """
+        df = pd.DataFrame(
+            [[payoff for payoff in row] for row in self.payoff_matrix],
+            index=self.strategies,
+            columns=self.strategies,
+        )
+        print("Матрица выплат:")
+        print(df)
 
-                # Проверяем, является ли это лучшим ответом для P1
-                P1_best_response = all(P1_payoff >= self.payoff_table[(P1_choice, other)][0] for other in df.columns)
+    def find_nash_equilibrium(self):
+        nash_equilibrium = list(self.game.support_enumeration())
+        nash_payoffs = []
+        for p1, p2 in nash_equilibrium:
+            x = np.argmax(p1)
+            y = np.argmax(p2)
+            nash_payoffs.append(self.payoff_matrix[x][y])
 
-                # Проверяем, является ли это лучшим ответом для P2
-                P2_best_response = all(P2_payoff >= self.payoff_table[(other, P2_choice)][1] for other in df.index)
-
-                if P1_best_response and P2_best_response:
-                    # Добавляем не только ходы, но и их выплаты
-                    nash_equilibria.append(((P1_choice, P2_choice), (P1_payoff, P2_payoff)))
-        return nash_equilibria
+        return nash_payoffs
 
     def find_pareto_optimal(self):
-        pareto_optimal = []
-        all_outcomes = self.get_all_outcomes()
+        """
+        Находит парето-оптимальные исходы.
+        """
+        outcomes = [
+            ((i, j), payoff)
+            for i, row in enumerate(self.payoff_matrix)
+            for j, payoff in enumerate(row)
+        ]
 
-        for (P1_choice, P2_choice, (P1_payoff, P2_payoff)) in all_outcomes:
-            is_dominated = False
-            for (other_P1_choice, other_P2_choice, (other_P1_payoff, other_P2_payoff)) in all_outcomes:
-                if (other_P1_payoff >= P1_payoff and other_P2_payoff >= P2_payoff) and (other_P1_payoff > P1_payoff or other_P2_payoff > P2_payoff):
-                    is_dominated = True
+        pareto_optimal = []
+
+        for ((i1, j1), (p1_payoff1, p2_payoff1)) in outcomes:
+            dominated = False
+            for ((i2, j2), (p1_payoff2, p2_payoff2)) in outcomes:
+                if (
+                    p1_payoff2 >= p1_payoff1
+                    and p2_payoff2 >= p2_payoff1
+                    and (p1_payoff2 > p1_payoff1 or p2_payoff2 > p2_payoff1)
+                ):
+                    dominated = True
                     break
-            if not is_dominated:
-                # Добавляем не только ходы, но и их выплаты
-                pareto_optimal.append(((P1_choice, P2_choice), (P1_payoff, P2_payoff)))
+            if not dominated:
+                # pareto_optimal.append(((self.strategies[i1], self.strategies[j1]), (p1_payoff1, p2_payoff1)))
+                pareto_optimal.append((p1_payoff1, p2_payoff1))
         return pareto_optimal

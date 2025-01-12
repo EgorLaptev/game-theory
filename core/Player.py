@@ -1,5 +1,6 @@
 class Player:
     def __init__(self, name, costs):
+        super().__init__()
         self.name = name
         self.costs = costs
 
