@@ -27,8 +27,11 @@ class Game:
             for p2_choice in self.strategies:
                 p1_split = p1_choice.split('/')
                 p2_split = p2_choice.split('/')
-                payoffs = self.calculate_payoff(p1_split, p2_split)
-                row.append(payoffs)
+                if p1_choice == p2_choice:
+                    row.append((0, 0))
+                else:
+                    payoffs = self.calculate_payoff(p1_split, p2_split)
+                    row.append(payoffs)
             matrix.append(row)
         return matrix
 
@@ -41,9 +44,11 @@ class Game:
 
         # Adjust payoffs for overlapping choices
         for choice in set(p1_choices) & set(p2_choices):
-            if self.player1.costs[choice] > self.player2.costs[choice]:
+            if self.player1.costs[choice] < self.player2.costs[choice]:
                 p2_payoff -= self.player2.costs[choice]
+                p1_payoff -= self.player1.costs[choice]
             else:
+                p2_payoff -= self.player2.costs[choice]
                 p1_payoff -= self.player1.costs[choice]
 
         return p1_payoff, p2_payoff
@@ -68,12 +73,25 @@ class Game:
         print("Матрица выплат:")
         print(df)
 
+    def find_index(self, arr, target):
+        arr = list(arr)
+
+        try:
+            return arr.index(target)  # Ищем индекс числа
+        except ValueError:
+            return -1  # Если числа нет в массиве, возвращаем -1
+
     def find_nash_equilibrium(self):
         nash_equilibrium = list(self.game.support_enumeration())
+        print(list(self.game.support_enumeration()))
         nash_payoffs = []
         for p1, p2 in nash_equilibrium:
-            x = np.argmax(p1)
-            y = np.argmax(p2)
+            x = self.find_index(p1, 1)
+            y = self.find_index(p2, 1)
+
+            if x < 0 or y < 0:
+                continue
+
             nash_payoffs.append(self.payoff_matrix[x][y])
 
         return nash_payoffs

@@ -8,8 +8,11 @@ def game_plot(all_outcomes, pareto_outcomes, nash_outcomes, max_payoff):
 
     plt.figure(figsize=(8, 8))
 
+    all_outcomes_flag = True
+
     for outcome in all_outcomes:
-        plt.scatter(outcome[0], outcome[1], color=all_outcomes_color, label='All outcomes' if outcome is all_outcomes[0] else "")
+        plt.scatter(outcome[0], outcome[1], color=all_outcomes_color, label='All outcomes' if all_outcomes_flag else "")
+        all_outcomes_flag = False
 
     plt.scatter(U[0], U[1], color=impossible_max_color, label='Impossible maximum', s=impossible_marker_size)
 
