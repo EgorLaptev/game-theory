@@ -4,7 +4,7 @@ from utils.plotter import game_plot
 
 # Players interests
 P1_costs = {"T1": 1, "T2": 2, "T3": 3}
-P2_costs = {"T1": 1, "T2": 2, "T3": 3}
+P2_costs = {"T1": 2, "T2": 3, "T3": 1}
 
 # Possible choices
 choices = ["T1/T2", "T1/T3", "T2/T3"]

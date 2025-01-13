@@ -27,11 +27,11 @@ class Game:
             for p2_choice in self.strategies:
                 p1_split = p1_choice.split('/')
                 p2_split = p2_choice.split('/')
-                if p1_choice == p2_choice:
-                    row.append((0, 0))
-                else:
-                    payoffs = self.calculate_payoff(p1_split, p2_split)
-                    row.append(payoffs)
+                # if p1_choice == p2_choice:
+                #     row.append((0, 0))
+                # else:
+                payoffs = self.calculate_payoff(p1_split, p2_split)
+                row.append(payoffs)
             matrix.append(row)
         return matrix
 
@@ -44,11 +44,11 @@ class Game:
 
         # Adjust payoffs for overlapping choices
         for choice in set(p1_choices) & set(p2_choices):
-            if self.player1.costs[choice] < self.player2.costs[choice]:
+            if self.player1.costs[choice] > self.player2.costs[choice]:
                 p2_payoff -= self.player2.costs[choice]
-                p1_payoff -= self.player1.costs[choice]
+                # p1_payoff -= self.player1.costs[choice]
             else:
-                p2_payoff -= self.player2.costs[choice]
+                # p2_payoff -= self.player2.costs[choice]
                 p1_payoff -= self.player1.costs[choice]
 
         return p1_payoff, p2_payoff
