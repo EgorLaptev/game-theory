@@ -2,6 +2,13 @@ import matplotlib.pyplot as plt
 from matplotlib.markers import MarkerStyle
 import numpy as np
 from config.plot import *
+from matplotlib.ticker import MaxNLocator
+
+ax = plt.figure().gca()
+
+ax.xaxis.set_major_locator(MaxNLocator(integer=True))
+ax.yaxis.set_major_locator(MaxNLocator(integer=True))
+
 
 def game_plot(all_outcomes, pareto_outcomes, nash_outcomes, max_payoff):
     U = (max_payoff, max_payoff)
@@ -45,6 +52,27 @@ def game_plot(all_outcomes, pareto_outcomes, nash_outcomes, max_payoff):
     plt.xlabel(x_label)
     plt.ylabel(y_label)
     plt.title(title)
+    plt.grid(True)
+    plt.legend()
+
+    plt.show()
+
+
+def game_result(history):
+    # Разделим массив на отдельные оси X и Y
+    x = [i+1 for i in range(len(history))]  # Индексы для оси X
+    y1 = [step[0] for step in history]  # Значения для оси Y (берем второй элемент каждого подмассива)
+    y2 = [step[1] for step in history]  # Значения для оси Y (берем второй элемент каждого подмассива)
+
+    # Построим график
+    plt.plot(x, y1, label='player 1')
+    plt.plot(x, y2, label='player 2')
+
+    # plt.xticks(range(0, len(history)))
+    # plt.yticks(range(0, max(y1+y2)))
+    plt.xlabel('Steps')
+    plt.ylabel('Winning')
+    plt.title('winnings from the number of games')
     plt.grid(True)
     plt.legend()
 

@@ -2,7 +2,7 @@ import nashpy as nash
 import numpy as np
 import pandas as pd
 import itertools as it
-from utils.plotter import game_plot
+from utils.plotter import game_plot, game_result
 import warnings
 from dataclasses import dataclass
 from typing import List
@@ -18,6 +18,7 @@ class NashResult:
 
 class Game:
     strategies = ["T1/T2", "T1/T3", "T2/T3"]
+    history = []
 
     def __init__(self, player1: Player, player2: Player):
         self.player1 = player1
@@ -26,9 +27,11 @@ class Game:
     def play(self, steps: int = 1):
         print(f"Playing {steps} steps")
         for _ in range(steps):
-            res = self.iter()
+            self.history.append(self.iter())
 
-        return res
+        game_result(self.history)
+
+        return self.history[-1]
 
     def iter(self):
         self.payoff_matrix = self.generate_payoff_matrix()
