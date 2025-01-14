@@ -2,13 +2,18 @@ import nashpy as nash
 import numpy as np
 import pandas as pd
 import itertools as it
+from utils.plotter import game_plot
+import warnings
+
+warnings.filterwarnings("ignore")
 
 
 class Game:
-    def __init__(self, player1, player2, strategies):
+    strategies = ["T1/T2", "T1/T3", "T2/T3"]
+
+    def __init__(self, player1, player2):
         self.player1 = player1
         self.player2 = player2
-        self.strategies = strategies
         self.payoff_matrix = self.generate_payoff_matrix()
 
         self.p1_matrix = [[payoff[0] for payoff in row] for row in self.payoff_matrix]
@@ -16,6 +21,27 @@ class Game:
 
         # nash game engine
         self.game = nash.Game(self.p1_matrix, self.p2_matrix)
+
+    def iter(self):
+        pass
+
+    def display(self):
+        nash_equilibrium = self.find_nash_equilibrium()
+        pareto_optimal = self.find_pareto_optimal()
+        all_outcomes = self.get_all_outcomes()
+        max_payoff = self.max_payoff()
+
+        self.display_payoff_matrix()
+
+        print("nash: ", nash_equilibrium)
+        print("pareto: ", pareto_optimal)
+
+        game_plot(
+            all_outcomes,
+            pareto_optimal,
+            nash_equilibrium,
+            max_payoff
+        )
 
     def generate_payoff_matrix(self):
         """
@@ -83,7 +109,6 @@ class Game:
 
     def find_nash_equilibrium(self):
         nash_equilibrium = list(self.game.support_enumeration())
-        print(list(self.game.support_enumeration()))
         nash_payoffs = []
         for p1, p2 in nash_equilibrium:
             x = self.find_index(p1, 1)
