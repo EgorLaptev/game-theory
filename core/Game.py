@@ -4,26 +4,69 @@ import pandas as pd
 import itertools as it
 from utils.plotter import game_plot
 import warnings
+from dataclasses import dataclass
+from typing import List
+from . import Player
 
 warnings.filterwarnings("ignore")
 
+@dataclass
+class NashResult:
+    payoff: tuple
+    strategy_p1: str
+    strategy_p2: str
 
 class Game:
     strategies = ["T1/T2", "T1/T3", "T2/T3"]
 
-    def __init__(self, player1, player2):
+    def __init__(self, player1: Player, player2: Player):
         self.player1 = player1
         self.player2 = player2
+
+    def play(self, steps: int = 1):
+        print(f"Playing {steps} steps")
+        for _ in range(steps):
+            res = self.iter()
+
+        return res
+
+    def iter(self):
         self.payoff_matrix = self.generate_payoff_matrix()
 
         self.p1_matrix = [[payoff[0] for payoff in row] for row in self.payoff_matrix]
         self.p2_matrix = [[payoff[1] for payoff in row] for row in self.payoff_matrix]
 
-        # nash game engine
-        self.game = nash.Game(self.p1_matrix, self.p2_matrix)
+        nash_equilibrium = self.find_nash_equilibrium()
+        pareto_optimal = self.find_pareto_optimal()
+        all_outcomes = self.get_all_outcomes()
+        max_payoff = self.max_payoff()
 
-    def iter(self):
+        # self.display_payoff_matrix()
+
+        # print("nash: ", nash_equilibrium)
+        # print("pareto: ", pareto_optimal)
+
+        preferred_nash = self.decide_nash(nash_equilibrium)
+
+        # print(f"Preferred nash: {preferred_nash}")
+
+        self.distribute_costs(preferred_nash)
+        self.player1.result += preferred_nash.payoff[0]
+        self.player2.result += preferred_nash.payoff[1]
+
+        # print("Player1 costs:")
+        # print(self.player1.costs)
+        # print("Player2 costs:")
+        # print(self.player2.costs)
+
+        # print(f"Player1 payoff: {self.player1.result}")
+        # print(f"Player2 payoff: {self.player2.result}")
+        
+        return self.player1.result, self.player2.result
+
+    def decide_nash(self, nash_results: list):
         pass
+        return nash_results[0]
 
     def display(self):
         nash_equilibrium = self.find_nash_equilibrium()
@@ -36,12 +79,51 @@ class Game:
         print("nash: ", nash_equilibrium)
         print("pareto: ", pareto_optimal)
 
-        game_plot(
-            all_outcomes,
-            pareto_optimal,
-            nash_equilibrium,
-            max_payoff
-        )
+        # game_plot(
+        #     all_outcomes,
+        #     pareto_optimal,
+        #     nash_equilibrium,
+        #     max_payoff
+        # )
+
+    def check_debate(self, debate_slot: str):
+        if self.player1.costs[debate_slot] > self.player2.costs[debate_slot]:
+            return (-1, 1)
+        return (1, -1)
+
+    def distribute_costs(self, nash_res: NashResult):
+        slots_p1 = nash_res.strategy_p1.split("/")
+        slots_p2 = nash_res.strategy_p2.split("/")
+
+        if slots_p1[0] in slots_p2 and slots_p1[1] not in slots_p2:
+            debate_strategy = slots_p1[0]
+            change = self.check_debate(debate_strategy)
+            self.player1.costs[debate_strategy] += change[0]
+            self.player2.costs[debate_strategy] += change[1]
+
+            self.player1.costs[slots_p1[1]] -= 1
+            self.player2.costs[list(set(slots_p2)-set([debate_strategy]))[0]] -= 1
+
+        elif slots_p1[1] in slots_p2 and slots_p1[0] not in slots_p2:
+            debate_strategy = slots_p1[1]
+            change = self.check_debate(debate_strategy)
+            self.player1.costs[debate_strategy] += change[0]
+            self.player2.costs[debate_strategy] += change[1]
+
+            self.player1.costs[slots_p1[0]] -= 1
+            self.player2.costs[list(set(slots_p2)-set([debate_strategy]))[0]] -= 1
+        elif slots_p1[0] in slots_p2 and slots_p1[1] in slots_p2:
+            debate_strategy_1 = slots_p1[0]
+            change = self.check_debate(debate_strategy_1)
+            self.player1.costs[debate_strategy_1] += change[0]
+            self.player2.costs[debate_strategy_1] += change[1]
+
+            debate_strategy_2 = slots_p1[1]
+            change = self.check_debate(debate_strategy_2)
+            self.player1.costs[debate_strategy_2] += change[0]
+            self.player2.costs[debate_strategy_2] += change[1]
+        else:
+            print("КАК ТЫ ТАКУЮ СИТУАЦИЮ ПОЛУЧИЛ ЭТО ЖЕ, *****, НЕВОЗМОЖНО???")
 
     def generate_payoff_matrix(self):
         """
@@ -108,7 +190,10 @@ class Game:
             return -1  # Если числа нет в массиве, возвращаем -1
 
     def find_nash_equilibrium(self):
-        nash_equilibrium = list(self.game.support_enumeration())
+        # nash game engine
+        game = nash.Game(self.p1_matrix, self.p2_matrix)
+
+        nash_equilibrium = list(game.support_enumeration())
         nash_payoffs = []
         for p1, p2 in nash_equilibrium:
             x = self.find_index(p1, 1)
@@ -117,7 +202,13 @@ class Game:
             if x < 0 or y < 0:
                 continue
 
-            nash_payoffs.append(self.payoff_matrix[x][y])
+            nash_payoffs.append(
+                NashResult(
+                    payoff=self.payoff_matrix[x][y],
+                    strategy_p1=self.strategies[x],
+                    strategy_p2=self.strategies[y]
+                )
+            )
 
         return nash_payoffs
 

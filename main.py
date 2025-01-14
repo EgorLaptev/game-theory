@@ -12,6 +12,12 @@ P2 = Player("Player 2", P2_costs)
 # Create the game
 game = Game(P1, P2)
 
-game.iter()  # day 1
+print(game.play(steps=7))
 
-game.display()
+# # day 1
+# game.iter()
+# # game.display()
+
+# # # day 2
+# game.iter()
+# # game.display()
