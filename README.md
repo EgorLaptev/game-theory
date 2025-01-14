@@ -1,7 +1,3 @@
-Here's the full README rewritten in English:
-
----
-
 # Training Simulator Using Game Theory
 
 ## Short Description
@@ -117,12 +113,12 @@ game.play(steps=100)
 
 1. Clone the repository:
    ```bash
-   git clone https://your-repository-url.git
+   git clone https://github.com/EgorLaptev/game-theory.git
    ```
 
 2. Navigate to the project directory:
    ```bash
-   cd your-project-directory
+   cd game-theory
    ```
 
 3. Install the dependencies:
