@@ -29,14 +29,17 @@ class Game:
         self.player1 = player1
         self.player2 = player2
 
-    def play(self, steps: int = 1):
+    def play(self, steps: int = 1, plot=True):
         print(f"Playing {steps} steps")
         for _ in range(steps):
-            self.history.append(self.iter())
-        GamePlotter.plot_game_result(self.history)
+            self.iter(plot=True)
+
+        if plot:
+            GamePlotter.plot_game_result(self.history)
+
         return self.history[-1]
 
-    def iter(self):
+    def iter(self, plot=False):
         self.payoff_matrix = self.generate_payoff_matrix()
 
         self.p1_matrix = [[payoff[0] for payoff in row] for row in self.payoff_matrix]
@@ -49,14 +52,20 @@ class Game:
         self.player1.result += preferred_nash.payoff[0]
         self.player2.result += preferred_nash.payoff[1]
 
-        return self.player1.result, self.player2.result
+        result = self.player1.result, self.player2.result
+
+        self.history.append(result)
+
+        if plot:
+            self.display(nash_equilibrium)
+
+        return result
 
     def decide_nash(self, nash_results: List[NashResult]):
         """ Selects a Nash equilibrium from the list of possible results. """
         return nash_results[-1]
 
-    def display(self):
-        nash_equilibrium = self.find_nash_equilibrium()
+    def display(self, nash_equilibrium):
         pareto_optimal = self.find_pareto_optimal()
         all_outcomes = self.get_all_outcomes()
         max_payoff = self.max_payoff()
@@ -64,7 +73,7 @@ class Game:
         self.display_payoff_matrix()
         print("Nash Equilibrium:", nash_equilibrium)
         print("Pareto Optimal Outcomes:", pareto_optimal)
-        GamePlotter.plot_game_outcomes(all_outcomes, max_payoff, nash_equilibrium)
+        # GamePlotter.plot_game_outcomes(all_outcomes, max_payoff, nash_equilibrium)
 
     def check_debate(self, debate_slot: str):
         """ Determine the outcome of a debate based on the costs. """
@@ -118,8 +127,8 @@ class Game:
     def display_payoff_matrix(self):
         """ Prints the payoff matrix as a DataFrame. """
         df = pd.DataFrame(self.payoff_matrix, index=self.strategies, columns=self.strategies)
-        print("Payoff Matrix:")
-        print(df)
+        print(f"(Step: {len(self.history)}) Payoff Matrix:")
+        print(df, '\n')
 
     def find_index(self, arr: List[float], target: float):
         """ Finds the index of a target in an array, or returns -1 if not found. """
