@@ -1,5 +1,5 @@
 # Training Simulator Using Game Theory
-
+  
 ## Short Description
 
 This project is a simulator where two athletes make decisions on which muscle groups to train, based on their preferences and the cost of each training session. The game uses game theory to find Nash equilibria and Pareto-optimal outcomes. Training results are visualized using **Matplotlib**.
