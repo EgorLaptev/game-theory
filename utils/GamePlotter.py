@@ -4,16 +4,15 @@ from matplotlib.ticker import MaxNLocator
 
 
 class GamePlotter:
-    max_payoff = 10
-    all_outcomes_color = 'blue'
-    impossible_max_color = 'red'
-    pareto_color = 'green'
-    nash_color = 'purple'
+    max_payoff = 5
+    all_outcomes_color = '#838996'
+    pareto_color = '#318CE7'
+    nash_color = '#50C878'
     impossible_marker_size = 100
     marker_size = 50
     nash_marker_size = 60
-    x_label = 'X-axis Label'
-    y_label = 'Y-axis Label'
+    x_label = '2\'nd player payoff'
+    y_label = '1\'st player payoff'
     title = 'Game Outcomes Plot'
 
     @staticmethod
@@ -44,7 +43,6 @@ class GamePlotter:
 
     @staticmethod
     def plot_nash_outcomes(nash_outcomes, pareto_outcomes):
-        U = (GamePlotter.max_payoff, GamePlotter.max_payoff)
         for outcome in nash_outcomes:
             plt.scatter(outcome[0], outcome[1], color=GamePlotter.nash_color, s=GamePlotter.nash_marker_size,
                         label='Nash equilibrium' if outcome is nash_outcomes[0] else "")
@@ -53,8 +51,6 @@ class GamePlotter:
                             marker=MarkerStyle("o", fillstyle="right"))
                 plt.scatter(outcome[0], outcome[1], s=GamePlotter.nash_marker_size, c=GamePlotter.nash_color,
                             marker=MarkerStyle("o", fillstyle="left"))
-            plt.plot([U[0], outcome[0]], [U[1], outcome[1]], linestyle='--', color=GamePlotter.impossible_max_color,
-                     linewidth=1)
 
     @staticmethod
     def plot_game_outcomes(all_outcomes, pareto_outcomes, nash_outcomes):
@@ -90,8 +86,8 @@ class GamePlotter:
 
         print(x, y1, y2)
 
-        plt.plot(x, y1, label='player 1')
-        plt.plot(x, y2, label='player 2')
+        plt.plot(x, y1, label='player 1', c='#318CE7')
+        plt.plot(x, y2, label='player 2', c='#EB4C42')
 
         plt.xlabel('Steps')
         plt.ylabel('Winning')

@@ -68,7 +68,6 @@ class Game:
     def display(self, nash_equilibrium):
         pareto_optimal = self.find_pareto_optimal()
         all_outcomes = self.get_all_outcomes()
-        max_payoff = self.max_payoff()
 
         self.display_payoff_matrix()
         print("Nash Equilibrium:", nash_equilibrium)
@@ -115,10 +114,6 @@ class Game:
                 p1_payoff -= self.player1.costs[choice]
 
         return p1_payoff, p2_payoff
-
-    def max_payoff(self):
-        """ Finds the maximum possible payoff. """
-        return max(sum(cost for _, cost in pair) for pair in it.combinations(self.player1.costs.items(), 2))
 
     def get_all_outcomes(self):
         """ Flattens the payoff matrix into a list of all outcomes. """
