@@ -1,4 +1,5 @@
 import warnings
+import random
 import numpy as np
 import pandas as pd
 import nashpy as nash
@@ -20,7 +21,6 @@ class NashResult:
 
 class Game:
     strategies = ["T1/T2", "T1/T3", "T2/T3"]
-    history = []
 
     def __init__(self, player1: Player, player2: Player):
         self.p2_matrix = None
@@ -28,6 +28,7 @@ class Game:
         self.payoff_matrix = None
         self.player1 = player1
         self.player2 = player2
+        self.history = []
 
     def play(self, steps: int = 1, plot=True):
         for _ in range(steps):
@@ -62,7 +63,7 @@ class Game:
 
     def decide_nash(self, nash_results: List[NashResult]):
         """ Selects a Nash equilibrium from the list of possible results. """
-        return nash_results[-1]
+        return max(nash_results, key=lambda nash: sum(nash.payoff))
 
     def display(self, nash_equilibrium):
         pareto_optimal = self.find_pareto_optimal()
@@ -71,13 +72,15 @@ class Game:
         self.display_payoff_matrix()
         print("Nash Equilibrium:", nash_equilibrium)
         print("Pareto Optimal Outcomes:", pareto_optimal)
-        GamePlotter.plot_game_outcomes(all_outcomes, pareto_optimal, nash_equilibrium)
+        # GamePlotter.plot_game_outcomes(all_outcomes, pareto_optimal, nash_equilibrium)
 
     def check_debate(self, debate_slot: str):
         """ Determine the outcome of a debate based on the costs. """
         if self.player1.costs[debate_slot] > self.player2.costs[debate_slot]:
             return -1, 1
-        return 1, -1
+        elif self.player1.costs[debate_slot] < self.player2.costs[debate_slot]:
+            return 1, -1
+        return 0, 0
 
     def distribute_costs(self, nash_res: NashResult):
         """ Distributes the costs based on the Nash equilibrium strategies. """
@@ -86,14 +89,14 @@ class Game:
 
         for slot in set(slots_p1) & set(slots_p2):
             change = self.check_debate(slot)
-            self.player1.costs[slot] += change[0]
-            self.player2.costs[slot] += change[1]
+            self.player1.costs[slot] = max(self.player1.costs[slot] + change[0], 0)
+            self.player2.costs[slot] = max(self.player2.costs[slot] + change[1], 0)
 
         for slot in set(slots_p1) - set(slots_p2):
-            self.player1.costs[slot] -= 1
+            self.player1.costs[slot] = max(self.player1.costs[slot]-1, 0)
 
         for slot in set(slots_p2) - set(slots_p1):
-            self.player2.costs[slot] -= 1
+            self.player2.costs[slot] = max(self.player2.costs[slot]-1, 0)
 
     def generate_payoff_matrix(self):
         """ Generates the payoff matrix based on players' strategies and costs. """
@@ -107,10 +110,22 @@ class Game:
         p2_payoff = self.player2.calculate_payoff(p2_choices)
 
         for choice in set(p1_choices) & set(p2_choices):
-            if self.player1.costs[choice] > self.player2.costs[choice]:
-                p2_payoff -= self.player2.costs[choice]
+            cost1 = self.player1.costs[choice]
+            cost2 = self.player2.costs[choice]
+            total_cost = cost1 + cost2
+
+            # Если общая стоимость равна 0, пропускаем
+            if total_cost == 0:
+                continue
+
+            prob_p1 = cost2 / total_cost
+            prob_p2 = cost1 / total_cost
+
+            # Выбор игрока, который понесет убыток, на основе вероятностей
+            if random.random() < prob_p1:
+                p1_payoff -= cost1  # Игрок 1 теряет стоимость
             else:
-                p1_payoff -= self.player1.costs[choice]
+                p2_payoff -= cost2  # Игрок 2 теряет стоимость
 
         return p1_payoff, p2_payoff
 
