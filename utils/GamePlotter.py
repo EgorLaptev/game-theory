@@ -58,6 +58,8 @@ class GamePlotter:
 
     @staticmethod
     def plot_game_outcomes(all_outcomes, pareto_outcomes, nash_outcomes):
+        nash_outcomes = [nash.payoff for nash in nash_outcomes]
+
         GamePlotter._setup_axes()
         GamePlotter.plot_all_outcomes(all_outcomes)
         GamePlotter.plot_pareto_outcomes(pareto_outcomes)
@@ -77,11 +79,16 @@ class GamePlotter:
 
     @staticmethod
     def plot_game_result(history):
+        if len(history) < 2:
+            return False
+
         GamePlotter._setup_axes()
 
         x = [i+1 for i in range(len(history))]
         y1 = [step[0] for step in history]
         y2 = [step[1] for step in history]
+
+        print(x, y1, y2)
 
         plt.plot(x, y1, label='player 1')
         plt.plot(x, y2, label='player 2')

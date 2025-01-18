@@ -73,7 +73,7 @@ class Game:
         self.display_payoff_matrix()
         print("Nash Equilibrium:", nash_equilibrium)
         print("Pareto Optimal Outcomes:", pareto_optimal)
-        # GamePlotter.plot_game_outcomes(all_outcomes, max_payoff, nash_equilibrium)
+        GamePlotter.plot_game_outcomes(all_outcomes, pareto_optimal, nash_equilibrium)
 
     def check_debate(self, debate_slot: str):
         """ Determine the outcome of a debate based on the costs. """
