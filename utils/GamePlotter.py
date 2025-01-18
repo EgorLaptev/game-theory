@@ -84,8 +84,6 @@ class GamePlotter:
         y1 = [step[0] for step in history]
         y2 = [step[1] for step in history]
 
-        print(x, y1, y2)
-
         plt.plot(x, y1, label='player 1', c='#318CE7')
         plt.plot(x, y2, label='player 2', c='#EB4C42')
 

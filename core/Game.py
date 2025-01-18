@@ -30,9 +30,8 @@ class Game:
         self.player2 = player2
 
     def play(self, steps: int = 1, plot=True):
-        print(f"Playing {steps} steps")
         for _ in range(steps):
-            self.iter(plot=True)
+            self.iter(plot=False)
 
         if plot:
             GamePlotter.plot_game_result(self.history)
@@ -125,26 +124,18 @@ class Game:
         print(f"(Step: {len(self.history)}) Payoff Matrix:")
         print(df, '\n')
 
-    def find_index(self, arr: List[float], target: float):
-        """ Finds the index of a target in an array, or returns -1 if not found. """
-        arr = list(arr)
-
-        try:
-            return arr.index(target)
-        except ValueError:
-            return -1
-
     def find_nash_equilibrium(self):
         """ Finds all Nash equilibrium using NashPy. """
         game = nash.Game(self.p1_matrix, self.p2_matrix)
         equilibrium = list(game.support_enumeration())
+
         return [
             NashResult(
-                payoff=self.payoff_matrix[self.find_index(p1, 1)][self.find_index(p2, 1)],
-                strategy_p1=self.strategies[self.find_index(p1, 1)],
-                strategy_p2=self.strategies[self.find_index(p2, 1)]
+                payoff=self.payoff_matrix[p1.argmax()][p2.argmax()],
+                strategy_p1=self.strategies[p1.argmax()],
+                strategy_p2=self.strategies[p2.argmax()]
             )
-            for p1, p2 in equilibrium if self.find_index(p1, 1) >= 0 and self.find_index(p2, 1) >= 0
+            for p1, p2 in equilibrium if p1.argmax() >= 0 and p2.argmax() >= 0
         ]
 
     def find_pareto_optimal(self):
