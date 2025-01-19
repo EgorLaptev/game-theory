@@ -32,7 +32,7 @@
 
 #### Дополнительные материалы
 
-![Презентация с описанием результатов)]( https://clck.ru/3FqQjX )
+![Презентация с описанием результатов]( https://docs.google.com/presentation/d/1YcZlyVL2HLkl6qLAZT5fFtdheodROVlS/edit?usp=sharing&ouid=110692830671303869956&rtpof=true&sd=true )
 
 
 ![Англоязычная версия readme с описанием кода]( https://github.com/EgorLaptev/game-theory/blob/master/code-readme.md)
