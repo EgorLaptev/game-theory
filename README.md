@@ -32,7 +32,7 @@
 
 #### Дополнительные материалы
 
-![Презентация с описанием результатов]( https://github.com/EgorLaptev/game-theory/blob/master/presentation.pptx )
+![Презентация с описанием результатов]( https://github.com/EgorLaptev/game-theory/blob/master/presentation.pdf )
 
 
 ![Англоязычная версия readme с описанием кода]( https://github.com/EgorLaptev/game-theory/blob/master/code-readme.md)
